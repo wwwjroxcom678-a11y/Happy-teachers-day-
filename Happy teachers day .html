@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Teachers' Day Ma'am Joy!</title>
+<style>
+  html, body {
+    margin: 0;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    background: radial-gradient(circle at center, #000 60%, #111);
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  .text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: gold;
+    text-shadow: 0 0 30px #ffcc00, 0 0 50px #ffaa00;
+    animation: fadeIn 2s ease forwards;
+    z-index: 2;
+  }
+  .text h1 {
+    font-family: "Brush Script MT", cursive;
+    font-size: 7vw;
+    margin: 0;
+  }
+  .text p {
+    font-family: Arial, sans-serif;
+    font-size: 2.4vw;
+    margin: 50px 0 0;
+    color: #fffacd;
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0; transform: translate(-50%, -60%) scale(0.9); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+</style>
+</head>
+<body>
+<canvas id="fireworks"></canvas>
+<div class="text">
+  <h1>Happy Teachers' Day Ma'am Joylass</h1>
+  <p>✨Thank you for teaching us!✨</p>
+  
+    <r> JADEITE</>
+
+</div>
+
+<script>
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+let fireworks = [], particles = [];
+
+function resizeCanvas() {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
+resizeCanvas();
+addEventListener("resize", resizeCanvas);
+
+const boomSound = new Audio("https://cdn.pixabay.com/audio/2021/08/04/audio_68cbaef7d1.mp3");
+boomSound.volume = 0.4;
+
+// Try autoplay sound on page load
+boomSound.play().catch(() => {
+  console.log("Autoplay blocked: will play after user interacts.");
+  document.body.addEventListener("click", () => {
+    boomSound.play().catch(()=>{});
+  }, { once: true });
+});
+
+class Firework {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = canvas.height;
+    this.targetY = Math.random() * canvas.height / 2;
+    this.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+    this.speed = Math.random() * 3 + 3;
+    this.trail = [];
+  }
+  update() {
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > 10) this.trail.shift();
+    this.y -= this.speed;
+    if (this.y < this.targetY) {
+      this.explode();
+      fireworks.splice(fireworks.indexOf(this), 1);
+    }
+  }
+  draw() {
+    ctx.beginPath();
+    const first = this.trail[0];
+    ctx.moveTo(first.x, first.y);
+    this.trail.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.strokeStyle = this.color;
+    ctx.stroke();
+  }
+  explode() {
+    const s = boomSound.cloneNode();
+    s.play().catch(()=>{});
+    for (let i = 0; i < 50; i++) {
+      particles.push(new Particle(this.x, this.y, this.color));
+    }
+  }
+}
+
+class Particle {
+  constructor(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.angle = Math.random() * 2 * Math.PI;
+    this.speed = Math.random() * 5 + 1;
+    this.alpha = 1;
+  }
+  update() {
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed;
+    this.alpha -= 0.015;
+  }
+  draw() {
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function animate() {
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  fireworks.forEach(f => { f.update(); f.draw(); });
+  particles.forEach(p => { p.update(); p.draw(); });
+  particles = particles.filter(p => p.alpha > 0);
+  requestAnimationFrame(animate);
+}
+
+setInterval(() => {
+  for (let i = 0; i < 5; i++) fireworks.push(new Firework());
+}, 2000);
+
+animate();
+</script>
+</body>
+</html>
